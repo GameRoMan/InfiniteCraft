@@ -73,7 +73,7 @@
 <body>
   <div id="game-container">
     <input id="element-input" type="text">
-    <button id="element-submit">Submit</button>
+    <button id="element-submit">Search</button>
     <p id="status-submit"></p>
   </div>
   <script>
@@ -145,14 +145,14 @@
         }
         //
         async function submit() {
-          document.getElementById("status-submit").textContent = 'Loading...';
+          document.getElementById("status-submit").textContent = 'Searching...';
           const element = document.getElementById("element-input").value;
           console.log(element);
           const data = await get_lineage(element);
           //
           if (data) {
             message = format_lineage(data);
-            send_message(message);
+            await send_message(message);
           }
         }
         //
