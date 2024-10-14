@@ -77,10 +77,11 @@
     <p id="status-submit">...</p>
   </div>
   <script>
+    (function() {
       (async function() {
         async function get_lineage(element) {
           try {
-            const proxy = '';
+            const proxy = ''
             const elementUrl = (`https://infinibrowser.wiki/api/recipe?id=${element}`);
             const url = `${proxy}${elementUrl}`;
             const response = await fetch(url, {
@@ -155,6 +156,7 @@
         //
         document.getElementById("element-submit").addEventListener("click", submit);
       })();
+    })();
   </script>
 
 </body>
