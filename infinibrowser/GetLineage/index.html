@@ -83,7 +83,7 @@
         //
         async function get_lineage(element) {
           try {
-            const proxy = ''
+            const proxy = 'https://api.cors.lol/url='
             const elementUrl = (`https://infinibrowser.wiki/api/recipe?id=${element}`);
             const url = `${proxy}${elementUrl}`;
             const response = await fetch(url, {
