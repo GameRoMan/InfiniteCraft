@@ -74,7 +74,7 @@
   <div id="game-container">
     <input id="element-input" type="text">
     <button id="element-submit">Submit</button>
-    <p id="status-submit">...</p>
+    <p id="status-submit"></p>
   </div>
   <script>
     (function() {
@@ -116,9 +116,10 @@
             });
             //
             if (!response.ok) {
+              document.getElementById("status-submit").textContent = 'Recipe not found';
               throw new Error(`HTTP error! status: ${response.status}`);
             } else {
-              //
+              document.getElementById("status-submit").textContent = 'Success!';
             }
           } catch (error) {
             console.error('Error:', error);
@@ -144,6 +145,7 @@
         }
         //
         async function submit() {
+          document.getElementById("status-submit").textContent = 'Loading...';
           const element = document.getElementById("element-input").value;
           console.log(element);
           const data = await get_lineage(element);
