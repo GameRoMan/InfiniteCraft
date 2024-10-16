@@ -9,6 +9,7 @@
 // @version         1.0
 // @author          GameRoMan
 // @description     Sends recipes to your discord server
+// @downloadURL     https://github.com/GameRoMan/InfiniteCraft/raw/refs/heads/main/infinibrowser/Infinihook/index.user.js
 //
 // ==/UserScript==
 
