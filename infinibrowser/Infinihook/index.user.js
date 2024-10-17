@@ -6,9 +6,9 @@
 // @match           https://infinibrowser.wiki/item?id=*
 // @match           https://infinibrowser.wiki/analyzer
 // @grant           none
-// @version         Beta 1.1
+// @version         Beta 1.2
 // @author          GameRoMan
-// @description     Sends recipes to your discord server
+// @description     Sends lineages for elements to your Discord webhook
 // @downloadURL     https://github.com/GameRoMan/InfiniteCraft/raw/refs/heads/main/infinibrowser/Infinihook/index.user.js
 //
 // ==/UserScript==
@@ -113,7 +113,7 @@
                 await sendMessage(webhook, formattedMessage);
             } else {
                 const sendBigMessage = confirm(`Lineage is too big\nMax: 2000 characters\nLineage: ${formattedMessage.length} characters\n\nDo you want the lineage to get sent in separate messages?`);
-                if (sendBigMessage) handleBigLineage(webhook, steps);
+                if (sendBigMessage) handleBigLineage(webhook, stepsJson);
             }
         }
     }
@@ -125,7 +125,7 @@
 
     // ---------- Message handling ----------
 
-    async function sendMessage(webhookUrl, message) {
+    async function sendMessage(webhookUrl, message, alertForSuccess=true) {
         try {
             const response = await fetch(
                 webhookUrl,
@@ -144,7 +144,8 @@
                 throw new Error(`HTTP error! status: ${response.status}`);
                 alert('Something went wrong, check Console for more information');
             } else {
-                alert('Lineage successfully sent to your webhook');
+                if (alertForSuccess) alert('Lineage successfully sent to your webhook');
+                return true;
             }
 
         } catch (error) {
@@ -153,28 +154,57 @@
     }
 
 
-    async function handleBigLineage(webhookUrl, steps) {
-        return alert('Sending big lineage is not implemented yet, sorry');
-    }
+    async function handleBigLineage(webhookUrl, stepsJson) {
+        const steps = convertToSteps(stepsJson);
+        const messages = splitIntoSeparateMessage(steps);
 
-    /*
-    async function sendMultipleMessages(webhookUrl, originalMessage) {
-        console.log(originalMessage.length);
+        for (let i = 0, len = messages.length; i < len; i++) {
+            const stepsForThisMessage = messages[i];
+            const message = convertToMessage(stepsForThisMessage);
 
-        const messages = splitIntoSeparateStrings(originalMessage, 1900);
-        console.log(messages);
+            let formattedMessage;
 
-        for (const message of messages) {
-            await sendMessage(webhookUrl, message);
+            if (i === (len - 1)) {
+                const messageWithLengthCount = addStepCount(message, steps);
+                const wrappedMessage = wrapMessage(messageWithLengthCount);
+                formattedMessage = wrappedMessage;
+            } else if (i === 0) {
+                const wrappedMessage = wrapMessage(message);
+                formattedMessage = addHeader(wrappedMessage, stepsJson);
+            } else {
+                const wrappedMessage = wrapMessage(message);
+                formattedMessage = wrappedMessage;
+            }
+
+            const success = await sendMessage(webhookUrl, formattedMessage, false);
+            console.log(success);
         }
     }
 
 
-    function splitIntoSeparateStrings(string, maxLength) {
-        if (string.length <= maxLength) return [string];
-        return [string.substr(0, maxLength), ...splitIntoSeparateStrings(string.substr(maxLength, string.length), maxLength)]
+    function splitIntoSeparateMessage(steps, maxLength=2000, joinCharacterLength=3) {
+        const messages = [];
+        let currentArray = [];
+        let currentLength = 0;
+
+        for (const step of steps) {
+            const newLength = currentLength + step.length + joinCharacterLength;
+            if (newLength > maxLength) {
+                messages.push(currentArray);
+                currentArray = [step];
+                currentLength = step.length;
+            } else {
+                currentArray.push(step);
+                currentLength = newLength;
+            }
+        }
+
+        if (currentArray.length > 0) {
+            messages.push(currentArray);
+        }
+
+        return messages;
     }
-    */
 
     // ---------- Message handling ----------
 
