@@ -6,7 +6,7 @@
 // @match           https://infinibrowser.wiki/item?id=*
 // @match           https://infinibrowser.wiki/analyzer
 // @grant           none
-// @version         1.0
+// @version         Beta 1.1
 // @author          GameRoMan
 // @description     Sends recipes to your discord server
 // @downloadURL     https://github.com/GameRoMan/InfiniteCraft/raw/refs/heads/main/infinibrowser/Infinihook/index.user.js
@@ -36,7 +36,7 @@
 
 
     function decodeWebhook(webhookEncoded) {
-        const base64Decoded = atob(webhookEncoded)
+        const base64Decoded = atob(webhookEncoded);
         const shift = 3;
 
         let webhook = "";
@@ -58,7 +58,7 @@
 
     function getWebhook() {
         const webhook = localStorage.getItem('webhookEncoded');
-        return decodeWebhook(webhook)
+        return decodeWebhook(webhook);
     }
 
     // ---------- Webhook setup functions ----------
@@ -90,6 +90,7 @@
 
     async function handleDiscordButtonClick() {
         const webhook = getWebhook();
+
         if (!webhook) {
             newWebhook();
             return;
@@ -99,16 +100,20 @@
         const data = await getLineage(elementUrl);
 
         if (data) {
-            const steps = data['steps'];
-            const message = formatLineage(steps);
+            const stepsJson = data['steps'];
 
-            if (message.length <= 2000) {
-                await sendMessage(webhook, message);
+            const steps = convertToSteps(stepsJson);
+            const message = convertToMessage(steps);
+
+            const messageWithLengthCount = addStepCount(message, steps);
+            const wrappedMessage = wrapMessage(messageWithLengthCount);
+            const formattedMessage = addHeader(wrappedMessage, stepsJson);
+
+            if (formattedMessage.length <= 2000) {
+                await sendMessage(webhook, formattedMessage);
             } else {
-                alert(`The lineage is too big\nMax characters allowed: 2000\nLineage: ${message.length} characters`);
-                return;
-                const sendBigMessage = confirm('Lineage is too long\n\nDo you want to the lineage get sent in separate messages? (Formatting might break)');
-                if (sendBigMessage) sendMultipleMessages(webhook, message);
+                const sendBigMessage = confirm(`Lineage is too big\nMax: 2000 characters\nLineage: ${formattedMessage.length} characters\n\nDo you want the lineage to get sent in separate messages?`);
+                if (sendBigMessage) handleBigLineage(webhook, steps);
             }
         }
     }
@@ -148,6 +153,11 @@
     }
 
 
+    async function handleBigLineage(webhookUrl, steps) {
+        return alert('Sending big lineage is not implemented yet, sorry');
+    }
+
+    /*
     async function sendMultipleMessages(webhookUrl, originalMessage) {
         console.log(originalMessage.length);
 
@@ -159,10 +169,12 @@
         }
     }
 
+
     function splitIntoSeparateStrings(string, maxLength) {
         if (string.length <= maxLength) return [string];
         return [string.substr(0, maxLength), ...splitIntoSeparateStrings(string.substr(maxLength, string.length), maxLength)]
     }
+    */
 
     // ---------- Message handling ----------
 
@@ -210,38 +222,42 @@
     }
 
 
-    function convertToLines(steps) {
-        const results = [];
+    function convertToSteps(stepsJson) {
+        const steps = [];
 
-        for (const item of steps) {
-            const {
-                a,
-                b,
-                result
-            } = item;
-            results.push(`${a.id} + ${b.id} = ${result.id}`);
+        for (const item of stepsJson) {
+            const { a, b, result } = item;
+            steps.push(`${a.id} + ${b.id} = ${result.id}`);
         }
 
-        return results;
+        return steps;
     }
 
 
-    function formatLineage(steps, step=0) {
-        const results = convertToLines(steps);
+    function convertToMessage(steps) {
+        return steps.join('\n');
+    }
 
-        const lastElementId = steps[steps.length - 1].result.id;
+
+    function addStepCount(message, steps) {
+        return `${message} // ${steps.length} :: `;
+    }
+
+
+    function addHeader(message, stepsJson) {
         const elementUrl = `<${window.location.href}>`;
+        const lastElementId = stepsJson[stepsJson.length - 1].result.id;
 
-        const message = results.join('\n');
-        const formattedMessage = `
+        return `Recipe for [\`${lastElementId}\`](${elementUrl})\n${message}`;
+    }
 
-ㅤ\n\nRecipe for [\`${lastElementId}\`](${elementUrl})
+
+    function wrapMessage(message) {
+       return `
 \`\`\`asciidoc
-${message} // ${step + results.length} :: \`\`\`
-
+${message}
+\`\`\`
 `;
-
-        return formattedMessage;
     }
 
     // ---------- Element handling ----------
