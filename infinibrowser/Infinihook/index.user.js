@@ -6,7 +6,7 @@
 // @match           https://infinibrowser.wiki/item?id=*
 // @match           https://infinibrowser.wiki/analyzer
 // @grant           none
-// @version         Beta 1.2
+// @version         0.2.1
 // @author          GameRoMan
 // @description     Sends lineages for elements to your Discord webhook
 // @downloadURL     https://github.com/GameRoMan/InfiniteCraft/raw/refs/heads/main/infinibrowser/Infinihook/index.user.js
@@ -217,12 +217,12 @@
         const element = (window.location.search) ? (window.location.href.split('=')[1]) : (window.location.href.split('/')[4]);
 
         const itemFooter = document.getElementById('item_footer');
-        const isOfficial = (!itemFooter);
+        const isUserSubmitted = (itemFooter && itemFooter.textContent === 'This is an unverified user-submitted element');
 
-        if (isOfficial) {
-            return `https://infinibrowser.wiki/api/recipe?id=${element}`;
-        } else {
+        if (isUserSubmitted) {
             return `https://infinibrowser.wiki/api/recipe/custom?id=${element}`;
+        } else {
+            return `https://infinibrowser.wiki/api/recipe?id=${element}`;
         }
     }
 
