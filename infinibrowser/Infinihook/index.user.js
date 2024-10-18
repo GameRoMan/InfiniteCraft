@@ -6,7 +6,7 @@
 // @match           https://infinibrowser.wiki/item?id=*
 // @match           https://infinibrowser.wiki/analyzer
 // @grant           none
-// @version         0.2.1
+// @version         0.2.1.1
 // @author          GameRoMan
 // @description     Sends lineages for elements to your Discord webhook
 // @downloadURL     https://github.com/GameRoMan/InfiniteCraft/raw/refs/heads/main/infinibrowser/Infinihook/index.user.js
@@ -112,7 +112,7 @@
             if (formattedMessage.length <= 2000) {
                 await sendMessage(webhook, formattedMessage);
             } else {
-                const sendBigMessage = confirm(`Lineage is too big\nMax: 2000 characters\nLineage: ${formattedMessage.length} characters\n\nDo you want the lineage to get sent in separate messages?`);
+                const sendBigMessage = confirm(`Lineage is too big\nMax: 2000 characters\nLineage: ${formattedMessage.length} characters\n\nDo you want the lineage to get sent in ${Math.ceil(formattedMessage.length / 2000)} separate messages?`);
                 if (sendBigMessage) handleBigLineage(webhook, stepsJson);
             }
         }
